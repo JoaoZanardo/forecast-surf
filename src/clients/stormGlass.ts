@@ -1,6 +1,7 @@
 import { InternalError } from '@src/util/errors/internal-error';
-import { AxiosError, AxiosStatic } from 'axios';
+import { AxiosError } from 'axios';
 import config, { IConfig } from 'config';
+import * as HTTPUtil from '@src/util/request';
 
 export interface StormGlassPointSource {
   [key: string]: number;
@@ -53,11 +54,10 @@ export class StormGlass {
     'swellDirection%2CswellHeight%2CswellPeriod%2CwaveDirection%2CwaveHeight%2CwindDirection%2CwindSpeed';
   readonly stormGlassAPISource = 'noaa';
 
-  constructor(protected request: AxiosStatic) {}
+  constructor(protected request = new HTTPUtil.Request()) {}
 
   async fetchPoints(lat: number, lng: number): Promise<ForecastPoints[]> {
     try {
-      console.log(stormGlassResourceConfig)
       const response = await this.request.get<StormGlassForecastResponse>(
         `${stormGlassResourceConfig.get('apiUrl')}/weather/point?params=${this.stormGlassAPIParams}&source=${this.stormGlassAPISource}&lat=${lat}&lng=${lng}`,
         {
@@ -70,8 +70,9 @@ export class StormGlass {
       return this.normalizeReponse(response.data);
     } catch (error) {
       const err = error as AxiosError;
-      if (err.response && err.response.status) {
-        throw new StormGlassResponseError(`Error: ${JSON.stringify(err.response.data)} Code: ${err.response.status}`);
+      if (HTTPUtil.Request.isRequestError(err)) {
+        /* eslint-disable @typescript-eslint/no-non-null-assertion */
+        throw new StormGlassResponseError(`Error: ${JSON.stringify(err.response!.data)} Code: ${err.response!.status}`);
       }
       throw new ClientRequestError(err.message);
     }
