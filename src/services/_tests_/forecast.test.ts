@@ -1,13 +1,15 @@
 import { StormGlass } from '@src/clients/stormGlass';
-import { Beach, BeachPosition, Forecast } from '../forecast';
+import { Beach, BeachPosition, Forecast, ForecastProcessingInternalError } from '../forecast';
 import stormGlassNormalizedResponseFixture from '@test/fixtures/stormglass_normalized_response_3_hours.json';
 
 jest.mock('@src/clients/stormGlass');
 
 describe('Forecas Service', () => {
-    StormGlass.prototype.fetchPoints = jest.fn().mockResolvedValue(stormGlassNormalizedResponseFixture);
+    const mockedStormGlassService = new StormGlass() as jest.Mocked<StormGlass>;
 
     it('should return the forecast for a list of beaches', async() => {
+      mockedStormGlassService.fetchPoints = jest.fn().mockResolvedValue(stormGlassNormalizedResponseFixture);
+
         const beaches: Beach[] = [
             {
               lat: -33.792726,
@@ -81,8 +83,31 @@ describe('Forecas Service', () => {
             },
           ];
 
-          const forecast = new Forecast(new StormGlass());
+          const forecast = new Forecast(mockedStormGlassService);
           const beachesWithRating = await forecast.processForecastForBeaches(beaches);
           expect(beachesWithRating).toEqual(expectedResponse);
+    });
+
+    it('should return an empty list when the beach array is empty', async () => {
+      const forecast = new Forecast(mockedStormGlassService);
+      const response = await forecast.processForecastForBeaches([]);
+      expect(response).toEqual([]);
+    });
+
+    it('should throw internal processing error when something goes wrong during the rating process', async() => {
+      const beaches: Beach[] = [
+        {
+          lat: -33.792726,
+          lng: 151.289824,
+          name: 'Manly',
+          position: BeachPosition.E,
+          user: 'some-id',
+        },
+    ];
+
+    mockedStormGlassService.fetchPoints.mockRejectedValue('Error fetching data');
+
+    const forecast = new Forecast(mockedStormGlassService);
+    await expect(forecast.processForecastForBeaches(beaches)).rejects.toThrow(ForecastProcessingInternalError);
     });
 });
