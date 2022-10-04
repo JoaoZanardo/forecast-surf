@@ -22,7 +22,7 @@ export interface StormGlassForecastResponse {
   hours: StormGlassPoint[];
 }
 
-export interface ForecastPoints {
+export interface ForecastPoint {
   time: string;
   swellDirection: number;
   swellHeight: number;
@@ -56,7 +56,7 @@ export class StormGlass {
 
   constructor(protected request = new HTTPUtil.Request()) {}
 
-  async fetchPoints(lat: number, lng: number): Promise<ForecastPoints[]> {
+  async fetchPoints(lat: number, lng: number): Promise<ForecastPoint[]> {
     try {
       const response = await this.request.get<StormGlassForecastResponse>(
         `${stormGlassResourceConfig.get('apiUrl')}/weather/point?params=${this.stormGlassAPIParams}&source=${this.stormGlassAPISource}&lat=${lat}&lng=${lng}`,
@@ -80,7 +80,7 @@ export class StormGlass {
 
   private normalizeReponse(
     points: StormGlassForecastResponse
-  ): ForecastPoints[] {
+  ): ForecastPoint[] {
     return points.hours.filter(this.isValidPoint.bind(this)).map((point) => ({
       time: point.time,
       swellDirection: point.swellDirection[this.stormGlassAPISource],
