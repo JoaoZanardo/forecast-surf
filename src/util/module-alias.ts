@@ -1,7 +1,7 @@
-import path, * as paht from 'path';
+import * as path from 'path';
 import moduleAlias from 'module-alias';
 
-const files = paht.resolve(__dirname, '../..');
+const files = path.resolve(__dirname, '../..');
 
 moduleAlias.addAliases({
   '@src': path.join(files, 'src'),
