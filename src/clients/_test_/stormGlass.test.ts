@@ -1,19 +1,23 @@
-import { StormGlass } from '@src/clients/stormGlass';
-import stormGlassWeather3HoursFixture from '@test/fixtures/stormglass_weather_3_hours.json';
-import stormGlassNormalized3HoursFixture from '@test/fixtures/stormglass_normalized_response_3_hours.json';
-import * as HTTPUtil from '@src/util/request';
+import { StormGlass } from '../stormGlass';
+import stormGlassWeather3HoursFixture from '../../../test/fixtures/stormglass_weather_3_hours.json';
+import stormGlassNormalized3HoursFixture from '../../../test/fixtures/stormglass_normalized_response_3_hours.json';
+import * as HTTPUtil from '../../util/request';
 
 jest.mock('@src/util/request');
 
 describe('StormGlass client', () => {
-  const MockedRequestClass = HTTPUtil.Request as jest.Mocked<typeof HTTPUtil.Request>;
+  const MockedRequestClass = HTTPUtil.Request as jest.Mocked<
+    typeof HTTPUtil.Request
+  >;
   const mockedRequest = new HTTPUtil.Request() as jest.Mocked<HTTPUtil.Request>;
 
   const lat = -33.792726;
   const lng = 151.289824;
 
   it('should return the normalized forecast from the stormGlass service', async () => {
-    mockedRequest.get.mockResolvedValue({ data: stormGlassWeather3HoursFixture } as HTTPUtil.Response);
+    mockedRequest.get.mockResolvedValue({
+      data: stormGlassWeather3HoursFixture,
+    } as HTTPUtil.Response);
 
     const stormGlass = new StormGlass(mockedRequest);
     const response = await stormGlass.fetchPoints(lat, lng);
@@ -32,7 +36,9 @@ describe('StormGlass client', () => {
         },
       ],
     };
-    mockedRequest.get.mockResolvedValue({ data: incompleteResponse } as HTTPUtil.Response);
+    mockedRequest.get.mockResolvedValue({
+      data: incompleteResponse,
+    } as HTTPUtil.Response);
 
     const stormGlass = new StormGlass(mockedRequest);
     const response = await stormGlass.fetchPoints(lat, lng);
@@ -41,7 +47,6 @@ describe('StormGlass client', () => {
   });
 
   it('should get a generic error from StormGlass service when the request fail before reaching the service', async () => {
-
     mockedRequest.get.mockRejectedValue({ message: 'Network Error' });
 
     const stormGlass = new StormGlass(mockedRequest);
@@ -52,7 +57,6 @@ describe('StormGlass client', () => {
   });
 
   it('should get an StormGlassResponseError when the StormGlass service responds with error', async () => {
-
     class FakeAxiosError extends Error {
       constructor(public response: object) {
         super();
@@ -60,7 +64,7 @@ describe('StormGlass client', () => {
     }
 
     MockedRequestClass.isRequestError.mockReturnValue(true);
-    
+
     mockedRequest.get.mockRejectedValue(
       new FakeAxiosError({
         status: 429,

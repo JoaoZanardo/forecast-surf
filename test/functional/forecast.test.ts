@@ -1,7 +1,7 @@
-import { Beach } from "@src/models/beach";
 import nock from 'nock';
-import stormGlassWeather3HoursFixture from '@test/fixtures/stormglass_weather_3_hours.json';
-import apiForecastResponse1Beach from '@test/fixtures/api_forecast_response_1_beach.json';
+import stormGlassWeather3HoursFixture from '../fixtures/stormglass_weather_3_hours.json';
+import apiForecastResponse1Beach from '../fixtures/api_forecast_response_1_beach.json';
+import { Beach } from '../../src/models/beach';
 
 describe('Beach forecast functional tests', () => {
   beforeAll(async () => {
@@ -13,7 +13,7 @@ describe('Beach forecast functional tests', () => {
       name: 'Manly',
       position: 'E',
     };
-    const beach =  new Beach(defaultBeach);
+    const beach = new Beach(defaultBeach);
     await beach.save();
   });
 
