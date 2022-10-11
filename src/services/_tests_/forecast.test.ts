@@ -5,7 +5,7 @@ import { Beach, BeachPosition } from '../../models/beach';
 
 jest.mock('../../clients/stormGlass');
 
-describe('Forecas Service', () => {
+describe('Forecast Service', () => {
   const mockedStormGlassService = new StormGlass() as jest.Mocked<StormGlass>;
 
   it('should return the forecast for a list of beaches', async () => {
@@ -19,6 +19,7 @@ describe('Forecas Service', () => {
         lng: 151.289824,
         name: 'Manly',
         position: BeachPosition.E,
+        user: 'FAKE-ID',
       },
     ];
 
@@ -103,6 +104,7 @@ describe('Forecas Service', () => {
         lng: 151.289824,
         name: 'Manly',
         position: BeachPosition.E,
+        user: 'FAKE-ID',
       },
     ];
 
