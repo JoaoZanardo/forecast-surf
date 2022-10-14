@@ -3,7 +3,15 @@
 
 name: Complete workflow
 
-on: ['push']
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
 
 jobs:
   build:
@@ -11,12 +19,11 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x]
-        mongodb-version: [5.0]
+        node-version: [12.x]
+        mongodb-version: [4.2]
 
     steps:
       - uses: actions/checkout@v2
-      - run: git fetch --prune --unshallow
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
