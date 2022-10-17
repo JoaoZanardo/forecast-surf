@@ -58,13 +58,12 @@ export class StormGlass {
     'swellDirection%2CswellHeight%2CswellPeriod%2CwaveDirection%2CwaveHeight%2CwindDirection%2CwindSpeed';
   readonly stormGlassAPISource = 'noaa';
 
-  constructor(protected request = new HTTPUtil.Request()) {}
+  constructor(protected request = new HTTPUtil.Request()) { }
 
   async fetchPoints(lat: number, lng: number): Promise<ForecastPoint[]> {
     try {
       const response = await this.request.get<StormGlassForecastResponse>(
-        `${stormGlassResourceConfig.get('apiUrl')}/weather/point?params=${
-          this.stormGlassAPIParams
+        `${stormGlassResourceConfig.get('apiUrl')}/weather/point?params=${this.stormGlassAPIParams
         }&source=${this.stormGlassAPISource}&lat=${lat}&lng=${lng}`,
         {
           headers: {
@@ -79,8 +78,7 @@ export class StormGlass {
       if (HTTPUtil.Request.isRequestError(err)) {
         /* eslint-disable @typescript-eslint/no-non-null-assertion */
         throw new StormGlassResponseError(
-          `Error: ${JSON.stringify(err.response!.data)} Code: ${
-            err.response!.status
+          `Error: ${JSON.stringify(err.response!.data)} Code: ${err.response!.status
           }`
         );
       }

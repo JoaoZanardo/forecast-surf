@@ -1,6 +1,7 @@
 import { ClassMiddleware, Controller, Post } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
+import logger from '../logger';
 import { authMiddleware } from '../middlewares/auth';
 import { Beach } from '../models/beach';
 
@@ -16,6 +17,7 @@ export class BeachesController {
       }).save();
       res.status(201).send(beach);
     } catch (error) {
+      logger.error(error);
       const err = error as Error;
       if (err instanceof mongoose.Error) {
         res.status(422).send({ error: err.message });
