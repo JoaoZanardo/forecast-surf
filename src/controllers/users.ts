@@ -25,23 +25,23 @@ export class USersController extends BaseController {
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).send({
+      return this.sendErrorResponse(res, {
         code: 401,
-        error: 'User not found!',
+        message: 'User not found!',
       });
     }
 
     if (!password) {
-      return res.status(422).send({
-        code: 422,
-        error: 'Password is required',
+      return this.sendErrorResponse(res, {
+        code: 401,
+        message: 'Password is required',
       });
     }
 
     if (!(await AuthService.comparePasswords(password, user.password))) {
-      return res.status(401).send({
+      return this.sendErrorResponse(res, {
         code: 401,
-        error: 'Passwords do not match!',
+        message: 'Password does not match',
       });
     }
 

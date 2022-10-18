@@ -3,7 +3,7 @@ import { Beach } from '../models/beach';
 import { InternalError } from '../util/errors/internal-error';
 import logger from '../logger';
 
-export interface BeachForecast extends Omit<Beach, 'user'>, ForecastPoint { }
+export interface BeachForecast extends Omit<Beach, 'user'>, ForecastPoint {}
 
 export interface TimeForecast {
   time: string;
@@ -17,7 +17,7 @@ export class ForecastProcessingInternalError extends InternalError {
 }
 
 export class Forecast {
-  constructor(private readonly stormGlass = new StormGlass()) { }
+  constructor(private readonly stormGlass = new StormGlass()) {}
 
   async processForecastForBeaches(beaches: Beach[]): Promise<TimeForecast[]> {
     const pointsWithCorrecSource = [];

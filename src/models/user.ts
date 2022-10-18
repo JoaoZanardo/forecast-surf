@@ -13,7 +13,7 @@ export enum CUSTOM_VALIDATION {
   DUPLICATED = 'DUPLICATED',
 }
 
-interface UserModel extends Omit<User, '_id'>, Document { }
+interface UserModel extends Omit<User, '_id'>, Document {}
 
 const schema = new mongoose.Schema(
   {

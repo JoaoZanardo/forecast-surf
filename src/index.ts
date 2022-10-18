@@ -4,7 +4,7 @@ import logger from './logger';
 
 enum ExitStatus {
   Failure = 1,
-  Success = 0
+  Success = 0,
 }
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -27,15 +27,17 @@ process.on('uncaughtException', (error) => {
     server.start();
 
     const exitSignals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM', 'SIGQUIT'];
-    exitSignals.map(sig => process.on(sig, async () => {
-      try {
-        await server.close();
-        process.exit(ExitStatus.Success);
-      } catch (error) {
-        logger.error(`App exited with error: ${error}`);
-        process.exit(ExitStatus.Failure)
-      }
-    }));
+    exitSignals.map((sig) =>
+      process.on(sig, async () => {
+        try {
+          await server.close();
+          process.exit(ExitStatus.Success);
+        } catch (error) {
+          logger.error(`App exited with error: ${error}`);
+          process.exit(ExitStatus.Failure);
+        }
+      })
+    );
   } catch (error) {
     logger.error(`App exited with error: ${error}`);
     process.exit(ExitStatus.Failure);
