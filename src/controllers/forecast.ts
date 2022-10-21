@@ -16,7 +16,7 @@ import ApiError from '../util/errors/api-error';
 const forecast = new Forecast();
 
 const rateLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute in milliseconds
+  windowMs: 7.2e6, // 2 hours
   max: 1,
   keyGenerator(req: Request): string {
     return req.ip;

@@ -3,6 +3,8 @@ import config, { IConfig } from 'config';
 import { TimeUtil } from '../util/time';
 import { InternalError } from '../util/errors/internal-error';
 import * as HTTPUtil from '../util/request';
+import CacheUtil from '../util/cache';
+import logger from '../logger';
 
 export interface StormGlassPointSource {
   [key: string]: number;
@@ -56,21 +58,36 @@ const stormGlassResourceConfig: IConfig = config.get(
 
 export class StormGlass {
   readonly stormGlassAPIParams =
-    'swellDirection%2CswellHeight%2CswellPeriod%2CwaveDirection%2CwaveHeight%2CwindDirection%2CwindSpeed';
+    'swellDirection,swellHeight,swellPeriod,waveDirection,waveHeight,windDirection,windSpeed';
   readonly stormGlassAPISource = 'noaa';
 
-  constructor(protected request = new HTTPUtil.Request()) {}
+  constructor(
+    protected readonly request = new HTTPUtil.Request(),
+    protected readonly cacheUtil = CacheUtil
+  ) {}
 
   async fetchPoints(lat: number, lng: number): Promise<ForecastPoint[]> {
+    const cacheKey = this.getCacheKey(lat, lng);
+    const cachedForecastPoints = this.getForecastPointsFromCache(cacheKey);
+    if (!cachedForecastPoints) {
+      const forecastPoints = await this.getForecastFromAPi(lat, lng);
+      this.setForecastPointsInCache(cacheKey, forecastPoints);
+      logger.info(`key ${cacheKey} salved in cahce`);
+      return forecastPoints;
+    }
+
+    return cachedForecastPoints;
+  }
+
+  async getForecastFromAPi(lat: number, lng: number): Promise<ForecastPoint[]> {
     const endTimestamp = TimeUtil.getUnixForAFutureDay(1);
     try {
       const response = await this.request.get<StormGlassForecastResponse>(
-        `${stormGlassResourceConfig.get('apiUrl')}/weather/point?params=${
+        `${stormGlassResourceConfig.get(
+          'apiUrl'
+        )}/weather/point?lat=${lat}&lng=${lng}&params=${
           this.stormGlassAPIParams
-        }
-        &source=${
-          this.stormGlassAPISource
-        }&lat=${lat}&lng=${lng}&end=${endTimestamp}`,
+        }&source=${this.stormGlassAPISource}&end=${endTimestamp}`,
         {
           headers: {
             Authorization: stormGlassResourceConfig.get('apiToken'),
@@ -91,6 +108,33 @@ export class StormGlass {
       }
       throw new ClientRequestError(err.message);
     }
+  }
+
+  protected getForecastPointsFromCache(
+    key: string
+  ): ForecastPoint[] | undefined {
+    const forecastPointsFromCache = this.cacheUtil.get<ForecastPoint[]>(key);
+
+    if (!forecastPointsFromCache) return;
+
+    logger.info(`Using cache to return forecast points for key: ${key}`);
+    return forecastPointsFromCache;
+  }
+
+  private getCacheKey(lat: number, lng: number): string {
+    return `forecast_points_${lat}_${lng}`;
+  }
+
+  private setForecastPointsInCache(
+    key: string,
+    forecastPoints: ForecastPoint[]
+  ): boolean {
+    logger.info(`Updating cache to return forecast points for key: ${key}`);
+    return this.cacheUtil.set<ForecastPoint[]>(
+      key,
+      forecastPoints,
+      stormGlassResourceConfig.get('cacheTtl')
+    );
   }
 
   private normalizeReponse(
