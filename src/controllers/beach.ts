@@ -14,7 +14,7 @@ export class BeachesController extends BaseController {
     try {
       const beach = await new Beach({
         ...req.body,
-        ...{ user: req.decoded?.id },
+        ...{ userId: req.decoded?.id },
       }).save();
       res.status(201).send(beach);
     } catch (error) {

@@ -24,7 +24,7 @@ describe('Beach forecast functional tests', () => {
       lng: 151.289824,
       name: 'Manly',
       position: 'E',
-      user: user.id,
+      userId: user.id,
     };
     await new Beach(defaultBeach).save();
   });
