@@ -1,41 +1,40 @@
 import { Response } from 'express';
-import mongoose from 'mongoose';
-import ApiError, { APIError } from '../util/errors/api-error';
 import logger from '../logger';
-import { CUSTOM_VALIDATION } from '../models/user';
+import ApiError, { APIError } from '../util/errors/api-error';
+import {
+  DatabaseError,
+  DatabaseUnknownClientError,
+  DatabaseValidationError,
+} from '../repositories/repository';
 
 export abstract class BaseController {
-  protected sendCreateUpdateErrorResponse(
-    res: Response,
-    error: mongoose.Error.ValidationError | Error
-  ): void {
-    if (error instanceof mongoose.Error.ValidationError) {
+  protected sendCreateUpdateErrorResponse(res: Response, error: unknown): void {
+    if (
+      error instanceof DatabaseValidationError ||
+      error instanceof DatabaseUnknownClientError
+    ) {
       const clientErrors = this.handleClientErrors(error);
-      this.sendErrorResponse(res, {
-        code: clientErrors.code,
-        message: clientErrors.error,
-      });
-      // res
-      //  .status(clientErrors.code)
-      // .send(ApiError.format({ code: clientErrors.code, error: clientErrors.error }));
+      res.status(clientErrors.code).send(
+        ApiError.format({
+          code: clientErrors.code,
+          message: clientErrors.error,
+        })
+      );
     } else {
-      logger.error(error);
-      this.sendErrorResponse(res, {
-        code: 500,
-        message: 'Something went wrong',
-      });
-      // res.status(500).send(ApiError.format({ code: 500, error: 'Something went wrong' }));
+      logger.error(JSON.stringify(error));
+      res
+        .status(500)
+        .send(ApiError.format({ code: 500, message: 'Something went wrong!' }));
     }
   }
 
-  private handleClientErrors(error: mongoose.Error.ValidationError) {
-    const duplicatedKindError = Object.values(error.errors).filter((err) => {
-      return err.kind === CUSTOM_VALIDATION.DUPLICATED;
-    });
-    if (duplicatedKindError.length > 0) {
+  private handleClientErrors(error: DatabaseError): {
+    code: number;
+    error: string;
+  } {
+    if (error instanceof DatabaseValidationError) {
       return { code: 409, error: error.message };
     }
-
     return { code: 400, error: error.message };
   }
 

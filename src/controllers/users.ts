@@ -7,7 +7,7 @@ import { User } from '../models/user';
 import { authMiddleware } from '../middlewares/auth';
 
 @Controller('users')
-export class USersController extends BaseController {
+export class UsersController extends BaseController {
   @Post('')
   async create(req: Request, res: Response): Promise<void> {
     try {

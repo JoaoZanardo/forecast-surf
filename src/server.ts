@@ -4,13 +4,14 @@ import { Application } from 'express';
 import { ForecastController } from './controllers/forecast';
 import * as database from './database';
 import { BeachesController } from './controllers/beach';
-import { USersController } from './controllers/users';
+import { UsersController } from './controllers/users';
 import logger from './logger';
 import swaggerUi from 'swagger-ui-express';
 import apiSchema from './api.schema.json';
 import * as OpenApiValidator from 'express-openapi-validator';
 import { OpenAPIV3 } from 'express-openapi-validator/dist/framework/types';
 import { apiErrorValidator } from './middlewares/api-error-validator';
+import { BeachMongoDBRepository } from './repositories/beachMongoDBRepository';
 
 export class SetupServer extends Server {
   constructor(private port = 3000) {
@@ -49,9 +50,9 @@ export class SetupServer extends Server {
   }
 
   private setupControllers(): void {
-    const forecastController = new ForecastController();
-    const beachesController = new BeachesController();
-    const usersCrontroller = new USersController();
+    const forecastController = new ForecastController(new BeachMongoDBRepository);
+    const beachesController = new BeachesController(new BeachMongoDBRepository);
+    const usersCrontroller = new UsersController();
     this.addControllers([
       forecastController,
       beachesController,

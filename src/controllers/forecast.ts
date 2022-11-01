@@ -6,12 +6,12 @@ import {
 } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { Forecast } from '../services/forecast';
-import { Beach } from '../models/beach';
 import { authMiddleware } from '../middlewares/auth';
 import logger from '../logger';
 import { BaseController } from '.';
 import rateLimit from 'express-rate-limit';
 import ApiError from '../util/errors/api-error';
+import { BeachRepository } from '../repositories';
 
 const forecast = new Forecast();
 
@@ -34,11 +34,24 @@ const rateLimiter = rateLimit({
 @Controller('forecast')
 @ClassMiddleware(authMiddleware)
 export class ForecastController extends BaseController {
+  constructor(private beachRepository: BeachRepository) {
+    super();
+  }
+
   @Get('')
   @Middleware(rateLimiter)
-  async getForecastForLoggedUser(req: Request, res: Response): Promise<void> {
+  async getForecastForLoggedUser(req: Request, res: Response): Promise<void | null> {
     try {
-      const beaches = await Beach.find({ user: req.decoded?.id });
+      if (!req.decoded?.id) {
+        this.sendErrorResponse(res, {
+          code: 500,
+          message: 'Something went wrong'
+        });
+        logger.error('Missing userId');
+        return
+      }
+
+      const beaches = await this.beachRepository.findAllBeachesForUser(req.decoded?.id);
       const forecastData = await forecast.processForecastForBeaches(beaches);
 
       res.status(200).send(forecastData);
