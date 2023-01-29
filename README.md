@@ -2,7 +2,7 @@
 
 ---
 
-[![Actions Status](https://github.com/JoaoZanardo/forecast-surf/workflows/Complete%20workflow/badge.svg)](https://github.com/waldemarnt/node-typescript-api/actions)
+[![Actions Status](https://github.com/JoaoZanardo/forecast-surf/workflows/Complete%20workflow/badge.svg)](https://github.com/JoaoZanardo/forecast-surf/actions)
 
 API COURSE 👉 [From zero to production: Learn how to make an API with Node and Typescript](https://www.nodejs-typescript-api.com/curso-gratis)
 
